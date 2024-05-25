@@ -1,67 +1,97 @@
-package main 
+package main
 
-import(
-	"bufio"
+import (
 	"fmt"
+	"html/template"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
+)
 
-	"github.com/spf13/cobra"
+var (
+	homeTemplate    *template.Template
+	resultsTemplate *template.Template
 )
 
 func main() {
-	// Define the root command for the CLI application
-	var rootCmd = &cobra.Command{
-		Use:   "filesearch",
-		Short: "Search for files matching a pattern",
-		Run:   runSearch,
+	// Parse the templates
+	var err error
+	homeTemplate, err = template.ParseFiles("templates/home.html")
+	if err != nil {
+		fmt.Println("Error parsing home template:", err)
+		os.Exit(1)
 	}
 
-	// Execute the root command
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+	resultsTemplate, err = template.ParseFiles("templates/results.html")
+	if err != nil {
+		fmt.Println("Error parsing results template:", err)
+		os.Exit(1)
+	}
+
+	// Serve the HTML form at the root URL
+	http.HandleFunc("/", homeHandler)
+	// Handle form submission at /search URL
+	http.HandleFunc("/search", searchHandler)
+
+	// Start the web server on port 8080
+	fmt.Println("Starting server at :8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Println("Failed to start server:", err)
 		os.Exit(1)
 	}
 }
 
-// runSearch function performs the file search
-func runSearch(cmd *cobra.Command, args []string) {
-	var pattern, directory string
-
-	// Prompt for search pattern and directory if not provided as arguments
-	if len(args) < 2 {
-		reader := bufio.NewReader(os.Stdin)
-
-		fmt.Print("Enter the search pattern: ")
-		pattern, _ = reader.ReadString('\n')
-		pattern = strings.TrimSpace(pattern)
-
-		fmt.Print("Enter the directory to search: ")
-		directory, _ = reader.ReadString('\n')
-		directory = strings.TrimSpace(directory)
-	} else {
-		// Use the provided arguments as search pattern and directory
-		pattern = args[0]
-		directory = args[1]
+// homeHandler serves the HTML form
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	if err := homeTemplate.Execute(w, nil); err != nil {
+		http.Error(w, fmt.Sprintf("Error rendering template: %v", err), http.StatusInternalServerError)
 	}
+}
 
-	// Pattern matching logic
-	var regexPattern *regexp.Regexp
-	var err error
-	regexPattern, err = regexp.Compile(pattern)
-	if err != nil {
-		fmt.Printf("Error compiling regex pattern: %v\n", err)
+// searchHandler handles the form submission and performs the file search
+func searchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Recursive file search
+	// Parse form data
+	pattern := r.FormValue("pattern")
+	directory := r.FormValue("directory")
+
+	// Compile the regex pattern
+	regexPattern, err := regexp.Compile(pattern)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error compiling regex pattern: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Perform the file search
+	matches, err := searchFiles(regexPattern, directory)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error searching directory: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Display the search results
+	data := struct {
+		Matches []string
+	}{
+		Matches: matches,
+	}
+
+	if err := resultsTemplate.Execute(w, data); err != nil {
+		http.Error(w, fmt.Sprintf("Error displaying results: %v", err), http.StatusInternalServerError)
+	}
+}
+
+// searchFiles performs the recursive file search
+func searchFiles(regexPattern *regexp.Regexp, directory string) ([]string, error) {
 	var matches []string
-	err = filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("Error accessing path %s: %v\n", path, err)
-			return nil
+			return err
 		}
 
 		// Check if the file name matches the search pattern
@@ -70,18 +100,5 @@ func runSearch(cmd *cobra.Command, args []string) {
 		}
 		return nil
 	})
-	if err != nil {
-		fmt.Printf("Error searching directory: %v\n", err)
-		return
-	}
-
-	// Write matching paths
-	if len(matches) == 0 {
-		fmt.Println("No matches found.")
-	} else {
-		for _, match := range matches {
-			fmt.Println(match)
-		}
-	}
+	return matches, err
 }
-
