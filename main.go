@@ -9,26 +9,7 @@ import (
 	"regexp"
 )
 
-var (
-	homeTemplate    *template.Template
-	resultsTemplate *template.Template
-)
-
 func main() {
-	// Parse the templates
-	var err error
-	homeTemplate, err = template.ParseFiles("templates/home.html")
-	if err != nil {
-		fmt.Println("Error parsing home template:", err)
-		os.Exit(1)
-	}
-
-	resultsTemplate, err = template.ParseFiles("templates/results.html")
-	if err != nil {
-		fmt.Println("Error parsing results template:", err)
-		os.Exit(1)
-	}
-
 	// Serve the HTML form at the root URL
 	http.HandleFunc("/", homeHandler)
 	// Handle form submission at /search URL
@@ -44,6 +25,11 @@ func main() {
 
 // homeHandler serves the HTML form
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	homeTemplate, err := template.ParseFiles("templates/home.html")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error parsing home template: %v", err), http.StatusInternalServerError)
+		return
+	}
 	if err := homeTemplate.Execute(w, nil); err != nil {
 		http.Error(w, fmt.Sprintf("Error rendering template: %v", err), http.StatusInternalServerError)
 	}
@@ -57,8 +43,18 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse form data
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, fmt.Sprintf("Error parsing form: %v", err), http.StatusBadRequest)
+		return
+	}
 	pattern := r.FormValue("pattern")
 	directory := r.FormValue("directory")
+
+	// Validate and sanitize directory path
+	if !filepath.IsAbs(directory) {
+		http.Error(w, "Invalid directory path", http.StatusBadRequest)
+		return
+	}
 
 	// Compile the regex pattern
 	regexPattern, err := regexp.Compile(pattern)
@@ -71,6 +67,13 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	matches, err := searchFiles(regexPattern, directory)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error searching directory: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Parse the results template
+	resultsTemplate, err := template.ParseFiles("templates/results.html")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error parsing results template: %v", err), http.StatusInternalServerError)
 		return
 	}
 
