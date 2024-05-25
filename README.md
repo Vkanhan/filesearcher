@@ -1,3 +1,3 @@
-# go-directory-assistant
+# Go Search Your File in Web
 
-* Search for files with pattern 
+This is a simple web application built in Go that allows users to search for files in a specified directory using regular expressions.
