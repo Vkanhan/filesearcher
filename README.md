@@ -2,6 +2,11 @@
 
 This is a simple web application built in Go that allows users to search for files in a specified directory using regular expressions.
 
+![Search Form](assets/search_form.png)
+*The user-friendly HTML form where you input your search criteria.*
+
+![Search Results](assets/search_result.png)
+*Displays the search results after the user submits the form.*
 
 ## Features
 
