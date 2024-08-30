@@ -1,6 +1,6 @@
 # Go Search Your File in Web
 
-This is a simple web application built in Go that allows users to search for files in a specified directory using regular expressions.
+This is a simple Go application that allows users to search for files in a specified directory using regular expressions. The application run as web application or as a command-line tool.
 
 ![Search Form](assets/search_form.png)
 *The user-friendly HTML form where you input your search criteria.*
@@ -10,9 +10,13 @@ This is a simple web application built in Go that allows users to search for fil
 
 ## Features
 
-- User-friendly HTML form for input.
-- Recursive file search based on regex pattern.
-- Displays search results on a separate results page.
+- **Web Interface:**
+  - User-friendly HTML form for input.
+  - Displays search results on a separate results page.
+  
+- **Command-Line Interface (CLI):**
+  - Search for files or directories directly from the terminal.
+  - Supports exact name matching using regular expressions.
 
 
 ## Setup and Running
@@ -23,28 +27,56 @@ This is a simple web application built in Go that allows users to search for fil
    cd go-search-your-files
    ```
 
-2. **Run the application:**
+2. **Running as a Web Application:**
     ```go
     go run main.go
     ```
 
-3. **Access the application:**
+    **Access the application:**
     Open your web browser and go to http://localhost:8080 to access the search form.
+
+3. **Running as a Command-Line Tool:**
+    ```go
+    go run main.go -cli
+    ```
+    **Example CLI usage**
+    ```$ go run main.go -cli
+    Enter the regex pattern to search for: search_result.png
+    Enter the directory to search in: D://
+    Matches found:
+    D:\Projects\filesearcher\assets\search_result.png
+    ```
+4. **Command-Line Flags**
+  
+    **-cli:** Enables CLI mode.
+
+    **-pattern:** (optional) Specifies the regex pattern to search for directly via the command line.
+
+    **-directory:** (optional) Specifies the directory to search in directly via the command line.
 
 ## Usage 
 
-    
-   1. Open the application in your web browser at http://localhost:8080.
+**Web application**
 
-   2. Enter a regex pattern and a valid directory path in the search form.
+  1. Open the application in your web browser at http://localhost:8080.
 
-   3. Submit the form to view the search results.
+  2. Enter a regex pattern and a valid directory path in the search form.
+
+  3. Submit the form to view the search results.
+
+**CLI application**
+
+  1. Run the application with the -cli flag.
+
+  2. Enter the regex pattern and directory when prompted.
+
+  3. The application will display any matches found.
 
 
 ## Note
 Ensure that the directory path provided in the search form is an absolute path and has the necessary read permissions.
 
 ## License
-This project is licensed under the MIT [LICENSE](LICENSE). See the LICENSE file for details.
+This project is licensed under the GNU [LICENSE](LICENSE). See the LICENSE file for details.
 
 
