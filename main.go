@@ -5,75 +5,69 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
 func main() {
 	// Define flags for CLI mode
-	patternFlag := flag.String("pattern", "", "Regex pattern to search for")
+	filenameFlag := flag.String("file", "", "File name to search for")
 	directoryFlag := flag.String("directory", "", "Directory to search in")
 	cliMode := flag.Bool("cli", false, "Enable console mode")
 
 	flag.Parse()
 
 	if *cliMode {
-		// If CLI mode is enabled, run the search from the console
-		runCLIMode(patternFlag, directoryFlag)
+		runCLIMode(filenameFlag, directoryFlag)
 	} else {
-		// If not in CLI mode, start the web server
 		http.HandleFunc("/", homeHandler)
 		http.HandleFunc("/search", searchHandler)
 
 		fmt.Println("Starting server at :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {
-			fmt.Println("Failed to start server:", err)
-			os.Exit(1)
+			log.Fatalf("failed to start the server")
 		}
 	}
 }
 
 // runCLIMode performs the file search and outputs the results to the console
-func runCLIMode(patternFlag, directoryFlag *string) {
+func runCLIMode(filenameFlag, directoryFlag *string) error {
 	// Get user input if flags are not provided
-	pattern := *patternFlag
+	filename := *filenameFlag
 	directory := *directoryFlag
 
 	reader := bufio.NewReader(os.Stdin)
 
-	if pattern == "" {
-		fmt.Print("Enter the regex pattern to search for: ")
-		patternInput, _ := reader.ReadString('\n')
-		pattern = strings.TrimSpace(patternInput)
+	if filename == "" {
+		fmt.Print("Enter the file name to search for: ")
+		filenameInput, err := reader.ReadString('\n')
+		if err != nil {
+			return fmt.Errorf("error reading the filename input: %w", err)
+		}
+		filename = strings.TrimSpace(filenameInput)
 	}
 
 	if directory == "" {
 		fmt.Print("Enter the directory to search in: ")
-		directoryInput, _ := reader.ReadString('\n')
+		directoryInput, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Errorf("error reading directory input: %w", err)
+		}
 		directory = strings.TrimSpace(directoryInput)
 	}
 
 	// Validate the input
-	if pattern == "" || directory == "" {
-		fmt.Println("Error: Both pattern and directory are required.")
-		os.Exit(1)
-	}
-
-	// Compile the regex pattern
-	regexPattern, err := regexp.Compile(pattern)
-	if err != nil {
-		fmt.Printf("Error compiling regex pattern: %v\n", err)
-		os.Exit(1)
+	if filename == "" || directory == "" {
+		log.Fatalf("Error: Both file name and directory are required.")
 	}
 
 	// Perform the file search
-	matches, err := searchFiles(regexPattern, directory)
+	matches, err := searchFiles(filename, directory)
 	if err != nil {
-		fmt.Printf("Error searching directory: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Error searching directory: %v\n", err)
 	}
 
 	// Display the search results
@@ -85,6 +79,7 @@ func runCLIMode(patternFlag, directoryFlag *string) {
 			fmt.Println(match)
 		}
 	}
+	return nil
 }
 
 // homeHandler serves the HTML form
@@ -111,7 +106,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error parsing form: %v", err), http.StatusBadRequest)
 		return
 	}
-	pattern := r.FormValue("pattern")
+	filename := r.FormValue("filename")
 	directory := r.FormValue("directory")
 
 	// Validate and sanitize directory path
@@ -120,15 +115,8 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Compile the regex pattern
-	regexPattern, err := regexp.Compile(pattern)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error compiling regex pattern: %v", err), http.StatusBadRequest)
-		return
-	}
-
 	// Perform the file search
-	matches, err := searchFiles(regexPattern, directory)
+	matches, err := searchFiles(filename, directory)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error searching directory: %v", err), http.StatusInternalServerError)
 		return
@@ -154,7 +142,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // searchFiles performs the recursive file search
-func searchFiles(regexPattern *regexp.Regexp, directory string) ([]string, error) {
+func searchFiles(filename, directory string) ([]string, error) {
 	var matches []string
 	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -168,7 +156,7 @@ func searchFiles(regexPattern *regexp.Regexp, directory string) ([]string, error
 		}
 
 		// Check if the file name matches the search pattern
-		if !info.IsDir() && regexPattern.MatchString(info.Name()) {
+		if !info.IsDir() && info.Name() == filename {
 			matches = append(matches, path)
 		}
 		return nil
