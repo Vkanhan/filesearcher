@@ -54,7 +54,7 @@ func runCLIMode(filenameFlag, directoryFlag *string) error {
 		fmt.Print("Enter the directory to search in: ")
 		directoryInput, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Errorf("error reading directory input: %w", err)
+			return fmt.Errorf("error reading directory input: %w", err)
 		}
 		directory = strings.TrimSpace(directoryInput)
 	}
