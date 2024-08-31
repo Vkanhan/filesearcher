@@ -1,6 +1,6 @@
-# Go Search Your File in Web
+# File searcher
 
-This is a simple Go application that allows users to search for files in a specified directory using regular expressions. The application run as web application or as a command-line tool.
+This is a simple Go application that allows users to search for files in a specified directory. The application run as web application or as a command-line tool.
 
 ![Search Form](assets/search_form.png)
 *The user-friendly HTML form where you input your search criteria.*
@@ -16,15 +16,15 @@ This is a simple Go application that allows users to search for files in a speci
   
 - **Command-Line Interface (CLI):**
   - Search for files or directories directly from the terminal.
-  - Supports exact name matching using regular expressions.
+  - Supports exact name matching.
 
 
 ## Setup and Running
 
 1. **Clone the repository:**
     ```sh
-   git clone https://github.com/Vkanhan/go-search-your-files.git
-   cd go-search-your-files
+   git clone https://github.com/Vkanhan/filesearcher.git
+   cd filesearcher
    ```
 
 2. **Running as a Web Application:**
@@ -41,7 +41,7 @@ This is a simple Go application that allows users to search for files in a speci
     ```
     **Example CLI usage**
     ```$ go run main.go -cli
-    Enter the regex pattern to search for: search_result.png
+    Enter the file name to search for: search_result.png
     Enter the directory to search in: D://
     Matches found:
     D:\Projects\filesearcher\assets\search_result.png
@@ -50,7 +50,7 @@ This is a simple Go application that allows users to search for files in a speci
   
     **-cli:** Enables CLI mode.
 
-    **-pattern:** (optional) Specifies the regex pattern to search for directly via the command line.
+    **-filename:** (optional) Specifies the file name to search for directly via the command line.
 
     **-directory:** (optional) Specifies the directory to search in directly via the command line.
 
@@ -60,7 +60,7 @@ This is a simple Go application that allows users to search for files in a speci
 
   1. Open the application in your web browser at http://localhost:8080.
 
-  2. Enter a regex pattern and a valid directory path in the search form.
+  2. Enter the file name and a valid directory path in the search form.
 
   3. Submit the form to view the search results.
 
@@ -68,7 +68,7 @@ This is a simple Go application that allows users to search for files in a speci
 
   1. Run the application with the -cli flag.
 
-  2. Enter the regex pattern and directory when prompted.
+  2. Enter the file name and directory when prompted.
 
   3. The application will display any matches found.
 
