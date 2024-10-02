@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -144,7 +145,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 // searchFiles performs the recursive file search
 func searchFiles(filename, directory string) ([]string, error) {
 	var matches []string
-	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(directory, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// Skip directories/files that cannot be accessed
 			if os.IsPermission(err) {
@@ -156,7 +157,7 @@ func searchFiles(filename, directory string) ([]string, error) {
 		}
 
 		// Check if the file name matches the search pattern
-		if !info.IsDir() && info.Name() == filename {
+		if !d.IsDir() && d.Name() == filename {
 			matches = append(matches, path)
 		}
 		return nil
