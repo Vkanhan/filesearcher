@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 )
 
@@ -11,7 +11,7 @@ func searchFiles(filename, directory string) ([]string, error) {
 	var matches []string
 	err := filepath.WalkDir(directory, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			if os.IsPermission(err) {
+			if errors.Is(err, fs.ErrPermission) {
 				fmt.Printf("Skipping %s: %v\n", path, err)
 				return nil // Continue the walk without stopping
 			}
