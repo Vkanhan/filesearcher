@@ -1,4 +1,4 @@
-package main
+package search
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func searchFiles(filename, directory string) ([]string, error) {
+func SearchFiles(filename, directory string) ([]string, error) {
 	var matches []string
 	err := filepath.WalkDir(directory, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {

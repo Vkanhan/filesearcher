@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+
+	"github.com/Vkanhan/filesearcher/internal/search"
 )
 
 func runWebMode() {
@@ -38,6 +40,7 @@ func fileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error parsing form: %v", err), http.StatusBadRequest)
 		return
 	}
+
 	filename := r.FormValue("filename")
 	directory := r.FormValue("directory")
 
@@ -46,7 +49,7 @@ func fileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matches, err := searchFiles(filename, directory)
+	matches, err := search.SearchFiles(filename, directory)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error searching directory: %v", err), http.StatusInternalServerError)
 		return

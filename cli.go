@@ -6,12 +6,14 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/Vkanhan/filesearcher/internal/search"
 )
 
 func runCLIMode(filenameFlag, directoryFlag *string) {
 	filename, directory := getCLIInput(filenameFlag, directoryFlag)
 
-	matches, err := searchFiles(filename, directory)
+	matches, err := search.SearchFiles(filename, directory)
 	if err != nil {
 		log.Fatalf("Error searching directory: %v\n", err)
 	}
@@ -56,5 +58,6 @@ func readCLIInput(reader *bufio.Reader) string {
 	if err != nil {
 		log.Fatalf("error reading string: %v", err)
 	}
+
 	return strings.TrimSpace(input)
 }

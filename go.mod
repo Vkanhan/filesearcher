@@ -1,3 +1,3 @@
-module github.com/Vkanhan/go-directory-assistant
+module github.com/Vkanhan/filesearcher
 
 go 1.22.2
