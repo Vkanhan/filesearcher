@@ -28,10 +28,21 @@
         label {
             margin: 0.5rem 0 0.2rem;
         }
-        input[type="text"] {
+        input[type="text"],
+        input[type="checkbox"] {
             padding: 0.5rem;
             border: 1px solid #ccc;
             border-radius: 5px;
+        }
+        .checkbox-container {
+            margin-top: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .checkbox-container label {
+            margin-left: 0.5rem;
+            font-size: 0.95rem;
         }
         input[type="submit"] {
             margin-top: 1rem;
@@ -53,8 +64,15 @@
         <form action="/search" method="post">
             <label for="filename">File name:</label>
             <input type="text" id="filename" name="filename" required>
+
             <label for="directory">Directory:</label>
             <input type="text" id="directory" name="directory" required>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="useFastwalk" name="useFastwalk" value="true">
+                <label for="useFastwalk">Use fastwalk (faster but skips some checks)</label>
+            </div>
+
             <input type="submit" value="Search">
         </form>
     </div>

@@ -49,7 +49,14 @@ func fileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matches, err := search.SearchFiles(filename, directory)
+	var walker search.WalkerFunc
+	if *fastwalkFlag {
+		walker = search.FastWalker
+	} else {
+		walker = search.StdlibWalker
+	}
+
+	matches, err := search.SearchFiles(filename, directory, walker)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error searching directory: %v", err), http.StatusInternalServerError)
 		return

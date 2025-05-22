@@ -13,7 +13,14 @@ import (
 func runCLIMode(filenameFlag, directoryFlag *string) {
 	filename, directory := getCLIInput(filenameFlag, directoryFlag)
 
-	matches, err := search.SearchFiles(filename, directory)
+	var walker search.WalkerFunc 
+	if *fastwalkFlag {
+		walker = search.FastWalker
+	} else {
+		walker = search.StdlibWalker
+	}
+
+	matches, err := search.SearchFiles(filename, directory, walker)
 	if err != nil {
 		log.Fatalf("Error searching directory: %v\n", err)
 	}
